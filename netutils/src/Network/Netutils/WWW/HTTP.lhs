@@ -10,11 +10,12 @@ module Network.Netutils.WWW.HTTP
        , rqHTTPSendAccept
        , rqHTTPSendUserAgent
        , rqHTTPSendEnd
-       , rqHTTPReceve
-       , doHTTP
+       , rqHTTPReceive
+       , doHTTPv4
        ) where
 
-import Network.Netutils.URLParse
+import Data.Maybe
+import Network.Netutils.HTTPParsers
 
 import System.Socket
 import System.Socket.Family.Inet
@@ -23,6 +24,7 @@ import System.Socket.Protocol.TCP
 import System.Socket.Type.Stream
 import Data.ByteString.Builder(toLazyByteString,byteString)
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Builder as Builder
 \end{code}
@@ -30,21 +32,34 @@ import qualified Data.ByteString.Builder as Builder
 
 The method to connect the web site.
 \begin{code}
-connectHTTP :: Family f => B.ByteString -> IO (Socket f Stream TCP)
+connectHTTP :: forall f.HasAddressInfo f
+            => B.ByteString
+            -> IO (Socket f Stream TCP,B.ByteString,B.ByteString)
 connectHTTP httpUrl = do
   hSock <- socket
-  addr:_ <- getAddressInfo (Just httpUrl) (Just "http") mempty
-  connect hSock $ socketAddress addr
-  return hSock
+  let url' = parsingURL httpUrl
+  case url' of
+    Left err -> error $ BC.unpack err
+    Right URL{..} -> do
+      let realPort = fromMaybe urlProtocal urlPort
+      addr:_ <- getAddressInfo (Just urlHostName)
+        (Just realPort) mempty :: HasAddressInfo f
+                               => IO [AddressInfo f Stream TCP]
+      connect hSock $ socketAddress addr
+      return (hSock,urlHostName,urlPath)
 \end{code}
 
 The method work with the socket.
 \begin{code}
-withHTTP :: Family f => B.ByteString -> (Socket f Stream TCP -> IO B.ByteString) -> IO B.ByteString
+withHTTP :: HasAddressInfo f
+         => B.ByteString
+         -> (Socket f Stream TCP  -> B.ByteString -> B.ByteString -> IO B.ByteString)
+         -> IO B.ByteString
 withHTTP httpUrl func = do
-  hs <- connectHTTP httpUrl
-  func  hs
+  (hs,uhn,up) <- connectHTTP httpUrl
+  texts <- func hs uhn up
   close hs
+  return texts
 \end{code}
 
 
@@ -52,36 +67,35 @@ withHTTP httpUrl func = do
 rqHTTPSendVersion :: Family f => Socket f Stream TCP -> B.ByteString -> IO B.ByteString
 rqHTTPSendVersion hSock path = do
   sendAllBuilder hSock 1024 (msgBuilder "" "\n") mempty
-  return $ toLazyByteString $ msgBuilder ">> " "\n"
-  where msgBuilder prefix postfix = foldr mappend (byteString prefix)
-          [ byteString "GET /"
-          , byteString msg
-          , byteString " HTTP/1.1"
-          , byteString postfix
-          ]
-                       
+  return $ BL.toStrict $ toLazyByteString $ msgBuilder ">> " "\n"
+  where msgBuilder prefix postfix = foldr mappend (byteString postfix)
+          [ byteString prefix
+          , byteString "GET "
+          , byteString path
+          , byteString " HTTP/1.0"
+          ]                       
 \end{code}
 
 \begin{code}
 rqHTTPSendHostName :: Family f => Socket f Stream TCP -> B.ByteString -> IO B.ByteString
 rqHTTPSendHostName hSock hostname = do
   sendAllBuilder hSock 1024 (msgBuilder "" "\n") mempty
-  return $ toLazyByteString $ msgBuilder ">> " "\n"
-  where msgBuilder prefix postfix = foldr mappend (byteString prefix)
-          [ byteString "Host:"
+  return $ BL.toStrict $ toLazyByteString $ msgBuilder ">> " "\n"
+  where msgBuilder prefix postfix = foldr mappend (byteString postfix)
+          [ byteString prefix
+          , byteString "Host:"
           , byteString hostname
-          , byteString postfix
           ]
 \end{code}
 
 \begin{code}
 rqHTTPSendAccept :: Family f => Socket f Stream TCP -> IO B.ByteString
 rqHTTPSendAccept hSock = do
-  send hSock (toLazyByteString $ msgBuilder "" "\n") mempty
-  return $ toLazyByteString $ msgBuilder ">> " "\n"
-  where msgBuilder msg prefix postfix = foldr mappend (byteString prefix)
-          [ byteString "Accept:text:/html"
-          , byteString postsfix
+  send hSock (BL.toStrict $ toLazyByteString $ msgBuilder "" "\n") mempty
+  return $ BL.toStrict $ toLazyByteString $ msgBuilder ">> " "\n"
+  where msgBuilder prefix postfix = foldr mappend (byteString postfix)
+          [ byteString prefix
+          , byteString "Accept:text:/html"
           ]
 \end{code}
 
@@ -89,10 +103,11 @@ rqHTTPSendAccept hSock = do
 rqHTTPSendUserAgent :: Family f => Socket f Stream TCP -> B.ByteString -> IO B.ByteString
 rqHTTPSendUserAgent hSock ua = do
   sendAllBuilder hSock 1024 (msgBuilder "" "\n") mempty
-  return $ toLazyByteString $ msgBuilder ">> " "\n"
-  where msgBuilder msg prefix postfix = foldr mappend (byteString prefix)
-          [ byteString ua
-          , bytrString postfix
+  return $ BL.toStrict $ toLazyByteString $ msgBuilder ">> " "\n"
+  where msgBuilder prefix postfix = foldr mappend (byteString postfix)
+          [ byteString prefix
+          , byteString "UserAgent:"
+          , byteString ua
           ]
 \end{code}
 
@@ -101,20 +116,42 @@ rqHTTPSendUserAgent hSock ua = do
 rqHTTPSendEnd :: Family f => Socket f Stream TCP -> IO B.ByteString
 rqHTTPSendEnd hSock = do
   sendAllBuilder hSock 1024 (msgBuilder "" "\n") mempty
-  return $ toLazyByteString $ msgBuilder ">> " "\n"
-  where msgBuilder msg prefix postfix = byteString prefix `mappend` byteString postfix
+  return $ BL.toStrict $ toLazyByteString $ msgBuilder ">> " "\n"
+  where msgBuilder prefix postfix = byteString prefix `mappend` byteString postfix
 \end{code}
 
 \begin{code}
 rqHTTPReceive :: Family f => Socket f Stream TCP -> IO B.ByteString
-rqHTTPReceive hSock = receiveAll hSock 1048576 mempty
+rqHTTPReceive hSock = do
+  hHead <- readUntilBlankLine hSock mempty
+  let len = getBodyLength hHead
+  hBody <- receive hSock len mempty
+  return $ hHead `B.append` hBody
 \end{code}
 
 
 \begin{code}
 doHTTPv4 :: B.ByteString -> IO B.ByteString
-doHTTPv4 url = do
-  let url' = parsingURL url
-  case url' of
-    Left 
+doHTTPv4 url = withHTTP url worker
+  where worker :: Socket Inet Stream TCP -> B.ByteString -> B.ByteString -> IO B.ByteString
+        worker sock uhn up = do
+          rsv  <- rqHTTPSendVersion   sock up
+          rshn <- rqHTTPSendHostName  sock uhn
+          rsa  <- rqHTTPSendAccept    sock
+          rsua <- rqHTTPSendUserAgent sock "Mozilla/5.0  AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063"
+          rqse <- rqHTTPSendEnd       sock
+          rqrc <- rqHTTPReceive       sock
+          return $ BL.toStrict $ toLazyByteString $ foldr (\a b -> (byteString a) `mappend` b) mempty
+            [rsv, rshn, rsa, rsua, rqse, rqrc]    
+\end{code}
+
+
+\begin{code}
+readUntilBlankLine :: Socket f Stream p -> MessageFlags -> IO B.ByteString
+readUntilBlankLine sock msgf = BL.toStrict . toLazyByteString <$> roll mempty ("","","")
+  where roll builder (a,b,c) = do
+          d <- receive sock 1 msgf
+          if and (zipWith (==) [a,b,c,d] ["\r","\n","\r","\n"])
+            then return $! builder `mappend` byteString (foldr B.append d [a,b,c])
+            else builder `seq` roll (builder `mappend` byteString a) (b,c,d)
 \end{code}
