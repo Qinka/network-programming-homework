@@ -15,7 +15,7 @@ module Network.Netutils.WWW.GUI
 
 import Network.Netutils.WWW.HTTP
 import System.Mem(performGC)
-
+import qualified GI.Gdk as Gdk
 import GI.Gtk hiding(init,main)
 import qualified GI.Gtk as Gtk
 import qualified GI.GLib as GLib
@@ -24,24 +24,36 @@ import Data.GI.Base
 import Control.Concurrent
 import Control.Monad
 import Control.Concurrent.MVar
+import Control.Concurrent.STM
 import Data.Text.Encoding
+
+import qualified Data.Text       as T
+import qualified Data.ByteString as B
 \end{code}
 
 
 \begin{code}
 updateHTTPItem :: Entry -> TextView -> IO ()
 updateHTTPItem urlEntry textview = void $ do
+  putStrLn "update"
   url <- urlEntry `get` #text
-  mv  <- newEmptyMVar
-  forkIO $ getHttp mv $ encodeUtf8 url
-  forkIO $ renew   mv textview
-  where getHttp mv url = void $ do
+  when (not $ T.null url) $ void $ do
+    mv  <- newEmptyMVar
+    Gdk.threadsAddIdle GLib.PRIORITY_DEFAULT $ getHttp mv $ encodeUtf8 url
+    Gdk.threadsAddIdle GLib.PRIORITY_DEFAULT $ renew   mv textview
+  where getHttp mv url = do
+          putStrLn "up"
+          print url
           rep <- doHTTPv4 url
+          print rep
           mv `putMVar` rep
-        renew mv tView = void $ do
-          req <- takeMVar mv
+          return False
+        renew mv tView = do
+          req' <- takeMVar mv
+          let req = decodeUtf8 req'
           buf <- tView `get` #buffer
-          buf `set` [#text := decodeUtf8 req]
+          buf `set` [#text := req]    
+          return False
 \end{code}
 
 \begin{code}
@@ -84,8 +96,12 @@ mkHeadBar win = do
 \begin{code}
 mkTextView :: Window -> IO (TextView)
 mkTextView win = do
-  textView <- new TextView [ #editable := False ]
-  #add win textView
+  textView <- new TextView [ #editable := False]
+  textBuf  <- new TextBuffer []
+  textView `set` [#buffer := textBuf]
+  sw <- new ScrolledWindow []
+  #add sw textView
+  #add win sw
   return textView
 \end{code}
 
