@@ -35,15 +35,12 @@ import qualified Data.ByteString as B
 \begin{code}
 updateHTTPItem :: Entry -> TextView -> IO ()
 updateHTTPItem urlEntry textview = void $ do
-  putStrLn "update"
   url <- urlEntry `get` #text
   when (not $ T.null url) $ void $ do
     mv  <- newEmptyMVar
     Gdk.threadsAddIdle GLib.PRIORITY_DEFAULT $ getHttp mv $ encodeUtf8 url
     Gdk.threadsAddIdle GLib.PRIORITY_DEFAULT $ renew   mv textview
   where getHttp mv url = do
-          putStrLn "up"
-          print url
           rep <- doHTTPv4 url
           print rep
           mv `putMVar` rep

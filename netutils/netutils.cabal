@@ -16,7 +16,7 @@ extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     Network.Netutils.HTTPParsers
+  exposed-modules:     Network.Netutils.Parsers
                        Network.Netutils.WWW.HTTP
                        Network.Netutils.WWW.GUI
                        Network.Netutils.WWW

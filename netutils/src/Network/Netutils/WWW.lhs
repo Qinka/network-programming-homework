@@ -2,7 +2,7 @@
 \label{sec:http}
 \begin{code}
 module Network.Netutils.WWW
-       ( wwwMain
+       ( main
        ) where
 import Network.Netutils.WWW.GUI
 import GI.Gtk hiding(init,main)
@@ -10,8 +10,8 @@ import qualified GI.Gtk as Gtk
 \end{code}
 
 \begin{code}
-wwwMain :: IO ()
-wwwMain = do
+main :: IO ()
+main = do
   initWWW
   win <- mkMainWindow
   textview <- mkTextView win

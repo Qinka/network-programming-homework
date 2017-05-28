@@ -2,15 +2,15 @@
 \section{URL Parser}
 
 \begin{code}
-module Network.Netutils.HTTPParsers
+module Network.Netutils.Parsers
        ( URL(..)
        , parsingURL
        , parsingURLS
        , transToBS
        , getBodyLength
        ) where
-
-import Data.ByteString as B hiding(pack,unpack)
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as B hiding(pack,unpack)
 import Data.ByteString.Char8 as B
 import Data.Functor.Identity
 import Text.Parsec

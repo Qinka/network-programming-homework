@@ -15,7 +15,7 @@ module Network.Netutils.WWW.HTTP
        ) where
 
 import Data.Maybe
-import Network.Netutils.HTTPParsers
+import Network.Netutils.Parsers
 
 import System.Socket
 import System.Socket.Family.Inet

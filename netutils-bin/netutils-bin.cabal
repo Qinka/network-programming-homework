@@ -18,8 +18,10 @@ cabal-version:       >=1.10
 executable netutils-bin
   main-is:             Main.lhs
   -- other-modules:       
-  -- other-extensions:    
+  default-extensions:  RecordWildCards
   build-depends:       base >=4.9 && <4.10
                      , netutils
+                     , directory
+                     , containers
   hs-source-dirs:      src
   default-language:    Haskell2010
