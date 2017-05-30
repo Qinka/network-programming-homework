@@ -16,12 +16,8 @@ module Network.Netutils.WWW.HTTP
 
 import Data.Maybe
 import Network.Netutils.Parsers
+import Network.Netutils.Socket
 
-import System.Socket
-import System.Socket.Family.Inet
-import System.Socket.Family.Inet6
-import System.Socket.Protocol.TCP
-import System.Socket.Type.Stream
 import Data.ByteString.Builder(toLazyByteString,byteString)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
@@ -66,7 +62,7 @@ withHTTP httpUrl func = do
 \begin{code}
 rqHTTPSendVersion :: Family f => Socket f Stream TCP -> B.ByteString -> IO B.ByteString
 rqHTTPSendVersion hSock path = do
-  sendAllBuilder hSock 1024 (msgBuilder "" "\n") mempty
+  sendAllBuilder hSock 1024 (msgBuilder "" "\r\n") mempty
   return $ BL.toStrict $ toLazyByteString $ msgBuilder ">> " "\n"
   where msgBuilder prefix postfix = foldr mappend (byteString postfix)
           [ byteString prefix
@@ -79,7 +75,7 @@ rqHTTPSendVersion hSock path = do
 \begin{code}
 rqHTTPSendHostName :: Family f => Socket f Stream TCP -> B.ByteString -> IO B.ByteString
 rqHTTPSendHostName hSock hostname = do
-  sendAllBuilder hSock 1024 (msgBuilder "" "\n") mempty
+  sendAllBuilder hSock 1024 (msgBuilder "" "\r\n") mempty
   return $ BL.toStrict $ toLazyByteString $ msgBuilder ">> " "\n"
   where msgBuilder prefix postfix = foldr mappend (byteString postfix)
           [ byteString prefix
@@ -102,7 +98,7 @@ rqHTTPSendAccept hSock = do
 \begin{code}
 rqHTTPSendUserAgent :: Family f => Socket f Stream TCP -> B.ByteString -> IO B.ByteString
 rqHTTPSendUserAgent hSock ua = do
-  sendAllBuilder hSock 1024 (msgBuilder "" "\n") mempty
+  sendAllBuilder hSock 1024 (msgBuilder "" "\r\n") mempty
   return $ BL.toStrict $ toLazyByteString $ msgBuilder ">> " "\n"
   where msgBuilder prefix postfix = foldr mappend (byteString postfix)
           [ byteString prefix
@@ -115,7 +111,7 @@ rqHTTPSendUserAgent hSock ua = do
 \begin{code}
 rqHTTPSendEnd :: Family f => Socket f Stream TCP -> IO B.ByteString
 rqHTTPSendEnd hSock = do
-  sendAllBuilder hSock 1024 (msgBuilder "" "\n") mempty
+  sendAllBuilder hSock 1024 (msgBuilder "" "\r\n") mempty
   return $ BL.toStrict $ toLazyByteString $ msgBuilder ">> " "\n"
   where msgBuilder prefix postfix = byteString prefix `mappend` byteString postfix
 \end{code}
@@ -146,12 +142,4 @@ doHTTPv4 url = withHTTP url worker
 \end{code}
 
 
-\begin{code}
-readUntilBlankLine :: Socket f Stream p -> MessageFlags -> IO B.ByteString
-readUntilBlankLine sock msgf = BL.toStrict . toLazyByteString <$> roll mempty ("","","")
-  where roll builder (a,b,c) = do
-          d <- receive sock 1 msgf
-          if and (zipWith (==) [a,b,c,d] ["\r","\n","\r","\n"])
-            then return $! builder `mappend` byteString (foldr B.append d [a,b,c])
-            else builder `seq` roll (builder `mappend` byteString a) (b,c,d)
-\end{code}
+

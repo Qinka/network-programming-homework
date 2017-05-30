@@ -17,6 +17,7 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Network.Netutils.Parsers
+                       Network.Netutils.Socket
                        Network.Netutils.WWW.HTTP
                        Network.Netutils.WWW.GUI
                        Network.Netutils.WWW
