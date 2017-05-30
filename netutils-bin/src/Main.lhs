@@ -4,7 +4,6 @@ module Main where
 
 import Data.Map (Map)
 import qualified Data.Map as Map
-import System.Directory
 import System.Environment
 
 import qualified Network.Netutils.WWW as WWW
@@ -49,10 +48,10 @@ mkMain is = do
 
 mkMI :: [Item] -> Map String Item
 mkMI = Map.fromList . map mk
-  where mk i@Item{..} = (itemName++exeExtension,i)
+  where mk i@Item{..} = (itemName,i)
 
 itemSelect :: String -> Map String Item -> Maybe (IO ())
-itemSelect name im = (fmap get) $ Map.lookupIndex name im
+itemSelect name im = (fmap get) $ Map.lookupIndex (takeWhile (/='.') name) im
   where get i = itemMainMethod $ snd $ Map.elemAt i im
   
 \end{code}
