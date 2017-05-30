@@ -16,7 +16,8 @@ extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     Network.Netutils.Parsers
+  exposed-modules:     Network.Netutils.FTP.Internal
+                       Network.Netutils.Parsers
                        Network.Netutils.Socket
                        Network.Netutils.WWW.HTTP
                        Network.Netutils.WWW.GUI
