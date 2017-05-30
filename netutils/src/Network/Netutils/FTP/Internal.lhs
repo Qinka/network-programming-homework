@@ -20,7 +20,7 @@ import qualified Data.ByteString.Builder as Builder
 \begin{code}
 connectFTP :: forall f.HasAddressInfo f
            => B.ByteString
-           -> IO (Socket f Stream TCP)
+           -> IO (Socket f Stream TCP,B.ByteString)
 connectFTP ftpUrl = do
   hSock <- socket
   case parsingURL ftpURL of
@@ -30,7 +30,8 @@ connectFTP ftpUrl = do
       addr <-  head <$> getAddressInfo (Just urlHostName)
         (Just realPort) mempty
       connect hSock $ socketAddress addr
-      return hSock
+      rt <- readUntilEndLine hSock mempty
+      return (hSock,rt)
 \end{code}
 
 \begin{code}
