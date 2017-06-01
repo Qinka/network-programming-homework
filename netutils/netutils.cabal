@@ -17,6 +17,8 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Network.Netutils.FTP.Internal
+                       Network.Netutils.FTP.GUI
+                       Network.Netutils.FTP
                        Network.Netutils.Parsers
                        Network.Netutils.Socket
                        Network.Netutils.WWW.HTTP
