@@ -6,13 +6,14 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import System.Environment
 
-import qualified Network.Netutils.FTP as FTP
-import qualified Network.Netutils.POP as POP
-import qualified Network.Netutils.WWW as WWW
+import qualified Network.Netutils.FTP    as FTP
+import qualified Network.Netutils.POP    as POP
+import qualified Network.Netutils.ScanIP as SIP
+import qualified Network.Netutils.WWW    as WWW
 
 main :: IO ()
 main = do
-  let is = [ www, ftp, pop ]
+  let is = [ www, ftp, pop, scanip ]
   mkMain is  
 \end{code}
 
@@ -31,8 +32,14 @@ ftp = Item { itemMainMethod = FTP.main
 pop :: Item
 pop = Item { itemMainMethod = POP.main
            , itemName       = "netutils-pop"
-           , itemInfo       = "Test tje pop and its commands"
+           , itemInfo       = "Test the pop and its commands"
            }
+scanip :: Item
+scanip = Item { itemMainMethod = SIP.main
+              , itemName       = "netutils-scanip"
+              , itemInfo       = "Scan the ip"
+              }
+                
 \end{code}
 
 

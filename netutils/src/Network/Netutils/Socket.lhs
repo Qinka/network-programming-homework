@@ -1,6 +1,7 @@
 \begin{code}
 module Network.Netutils.Socket
        ( module Socket
+       , ICMP(..)
        , readUntilDotLine
        , readUntilEndLine
        , readUntilBlankLine
@@ -11,6 +12,7 @@ import System.Socket.Family.Inet      as Socket
 import System.Socket.Family.Inet6     as Socket
 import System.Socket.Protocol.TCP     as Socket
 import System.Socket.Type.Stream      as Socket
+import System.Socket.Type.Raw         as Socket
 
 import Data.ByteString.Builder
 import qualified Data.ByteString as B
@@ -47,4 +49,10 @@ readUntilBlankLine sock msgf = BL.toStrict . toLazyByteString <$> roll mempty ("
           if and (zipWith (==) [a,b,c,d] ["\r","\n","\r","\n"])
             then return $! builder `mappend` byteString (foldr B.append d [a,b,c])
             else builder `seq` roll (builder `mappend` byteString a) (b,c,d)
+\end{code}
+
+\begin{code}
+data ICMP = ICMP
+instance Protocol ICMP where
+  protocolNumber _ = 1
 \end{code}
