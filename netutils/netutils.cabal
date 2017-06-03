@@ -20,6 +20,7 @@ library
                        Network.Netutils.FTP.GUI
                        Network.Netutils.FTP
                        Network.Netutils.Parsers
+                       Network.Netutils.POP.Internal
                        Network.Netutils.Socket
                        Network.Netutils.WWW.HTTP
                        Network.Netutils.WWW.GUI

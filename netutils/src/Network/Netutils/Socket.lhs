@@ -1,6 +1,7 @@
 \begin{code}
 module Network.Netutils.Socket
        ( module Socket
+       , readUntilDotLine
        , readUntilEndLine
        , readUntilBlankLine
        ) where
@@ -16,6 +17,16 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
 \end{code}
 
+
+\begin{code}
+readUntilDotLine :: Socket f Stream p -> MessageFlags -> IO B.ByteString
+readUntilDotLine sock msgf = BL.toStrict . toLazyByteString <$> roll mempty "" ""
+  where roll builder a b = do
+          c <- receive sock 1 msgf
+          if and (zipWith (==) [a,b,c] [".","\r","\n"])
+            then return $! builder `mappend` byteString (a `B.append` b `B.append` c)
+            else builder `seq` roll (builder `mappend` byteString a) b c
+\end{code}
 
 \begin{code}
 readUntilEndLine :: Socket f Stream p -> MessageFlags -> IO B.ByteString

@@ -9,6 +9,8 @@ module Network.Netutils.Parsers
        , transToBS
        , getBodyLength
        , getFTPR
+       , getPOPR
+       , getPOPSTAT
        , getFTPPASV
        ) where
 import Data.ByteString (ByteString)
@@ -113,8 +115,46 @@ parsingFTPR = do
 \end{code}
 
 \begin{code}
-getFTPR :: ByteString -> (Maybe Int,ByteString)
+getFTPR :: ByteString -> (Maybe Int, ByteString)
 getFTPR str = case parse parsingFTPR "" str of
   Right x -> x
   Left e -> (Just (-1) ,B.pack $ show e)
+\end{code}
+
+\begin{code}
+parsingPOPR :: Stream s Identity Char
+            => Parsec s u (Bool, ByteString)
+parsingPOPR = do
+  state <- getState
+  str <- nextString
+  return (state, B.pack str)
+  where nextString = (++ "\r\n") <$> many (noneOf "\r\n") <* string "\r\n"
+        readOk = string "+OK" >> return True
+        readErr = string "-ERR" >> return False
+        getState = try readOk <|> try readErr <|> return False
+\end{code}
+
+\begin{code}
+getPOPR :: ByteString -> (Bool, ByteString)
+getPOPR str = case parse parsingPOPR "" str of
+  Right x -> x
+  Left e -> (False,B.pack $ show e)
+\end{code}
+
+\begin{code}
+parsingPOPSTAT :: Stream s Identity Char
+               => Parsec s u (Int,Int)
+parsingPOPSTAT = do
+  skipMany $ noneOf "0123456789"
+  total <- read <$> many1 digit
+  skipMany $ noneOf "0123456789"
+  size <- read <$> many1 digit
+  return (total,size)
+\end{code}
+
+\begin{code}
+getPOPSTAT :: ByteString -> (Int,Int)
+getPOPSTAT str = case parse parsingPOPSTAT "" str of
+  Right x -> x
+  Left e -> (0,0)
 \end{code}
