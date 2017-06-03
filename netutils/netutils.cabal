@@ -19,8 +19,11 @@ library
   exposed-modules:     Network.Netutils.FTP.Internal
                        Network.Netutils.FTP.GUI
                        Network.Netutils.FTP
+                       Network.Netutils.GTK
                        Network.Netutils.Parsers
                        Network.Netutils.POP.Internal
+                       Network.Netutils.POP.GUI
+                       Network.Netutils.POP
                        Network.Netutils.Socket
                        Network.Netutils.WWW.HTTP
                        Network.Netutils.WWW.GUI

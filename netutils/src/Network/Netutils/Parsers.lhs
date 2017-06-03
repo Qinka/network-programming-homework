@@ -135,10 +135,10 @@ parsingPOPR = do
 \end{code}
 
 \begin{code}
-getPOPR :: ByteString -> (Bool, ByteString)
+getPOPR :: ByteString -> (Bool, ByteString,ByteString)
 getPOPR str = case parse parsingPOPR "" str of
-  Right x -> x
-  Left e -> (False,B.pack $ show e)
+  Right (is,rt) -> (is,rt,str)
+  Left e -> (False,B.pack $ show e,str)
 \end{code}
 
 \begin{code}

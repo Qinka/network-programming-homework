@@ -20,12 +20,12 @@ import qualified Data.ByteString.Lazy as BL
 
 \begin{code}
 readUntilDotLine :: Socket f Stream p -> MessageFlags -> IO B.ByteString
-readUntilDotLine sock msgf = BL.toStrict . toLazyByteString <$> roll mempty "" ""
-  where roll builder a b = do
-          c <- receive sock 1 msgf
-          if and (zipWith (==) [a,b,c] [".","\r","\n"])
-            then return $! builder `mappend` byteString (a `B.append` b `B.append` c)
-            else builder `seq` roll (builder `mappend` byteString a) b c
+readUntilDotLine sock msgf = BL.toStrict . toLazyByteString <$> roll mempty "" "" "" ""
+  where roll builder a b c d = do
+          e <- receive sock 1 msgf
+          if and (zipWith (==) [a,b,c,d,e] ["\r","\n",".","\r","\n"])
+            then return $! builder `mappend` byteString (a `B.append` b `B.append` c `B.append` d `B.append` e)
+            else builder `seq` roll (builder `mappend` byteString a) b c d e
 \end{code}
 
 \begin{code}

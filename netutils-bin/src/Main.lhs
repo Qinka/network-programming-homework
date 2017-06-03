@@ -7,11 +7,12 @@ import qualified Data.Map as Map
 import System.Environment
 
 import qualified Network.Netutils.FTP as FTP
+import qualified Network.Netutils.POP as POP
 import qualified Network.Netutils.WWW as WWW
 
 main :: IO ()
 main = do
-  let is = [ www, ftp ]
+  let is = [ www, ftp, pop ]
   mkMain is  
 \end{code}
 
@@ -25,7 +26,12 @@ www = Item { itemMainMethod = WWW.main
 ftp :: Item
 ftp = Item { itemMainMethod = FTP.main
            , itemName       = "netutils-ftp"
-           , itemInfo       = "Text the ftp and LIST command"
+           , itemInfo       = "Test the ftp and LIST command"
+           }
+pop :: Item
+pop = Item { itemMainMethod = POP.main
+           , itemName       = "netutils-pop"
+           , itemInfo       = "Test tje pop and its commands"
            }
 \end{code}
 

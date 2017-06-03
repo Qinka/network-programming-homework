@@ -5,7 +5,7 @@
 \begin{code}
 module Network.Netutils.WWW.GUI
        ( updateHTTPItem
-       , initWWW
+       , initGUI
        , mkMainWindow
        , mkHeadBar
        , mkTextView
@@ -14,9 +14,10 @@ module Network.Netutils.WWW.GUI
 
 
 import Network.Netutils.WWW.HTTP
-import System.Mem(performGC)
+
+import Network.Netutils.GTK
 import qualified GI.Gdk as Gdk
-import GI.Gtk hiding(init,main)
+import GI.Gtk hiding (init,main)
 import qualified GI.Gtk as Gtk
 import qualified GI.GLib as GLib
 import Data.GI.Base
@@ -51,18 +52,6 @@ updateHTTPItem urlEntry textview = void $ do
           buf <- tView `get` #buffer
           buf `set` [#text := req]    
           return False
-\end{code}
-
-\begin{code}
-initWWW :: IO ()
-initWWW = do
-  GLib.timeoutAdd 0 5000 $ do
-    putStrLn "** (T) Going into GC"
-    performGC
-    putStrLn "** GC done"
-    return True
-  Gtk.init Nothing
-  return ()
 \end{code}
 
 \begin{code}

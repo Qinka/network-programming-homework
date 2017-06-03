@@ -5,6 +5,7 @@
 \begin{code}
 module Network.Netutils.POP.Internal
        ( connectPOP3
+       , connectPOP3auth
        , authPOP3
        , quitPOP3
        , statPOP3
@@ -36,7 +37,7 @@ connectPOP3 popUrl = do
         (Just realPort) mempty :: HasAddressInfo f
                                => IO (AddressInfo f Stream TCP)
       connect hSock $ socketAddress addr
-      (_,str) <- readPOPR hSock mempty
+      (_,_,str) <- readPOPR hSock mempty
       return (hSock,str)
 \end{code}
 
@@ -44,7 +45,7 @@ connectPOP3 popUrl = do
 quitPOP3 :: Socket f Stream TCP -> IO (B.ByteString)
 quitPOP3 hSock = do
   sendAllBuilder hSock 1024 (quitBuilder "" "\r\n") mempty
-  (_,str) <- readPOPR hSock mempty
+  (_,_,str) <- readPOPR hSock mempty
   return $ BL.toStrict $ toLazyByteString $ quitBuilder ">> " "\n" `mappend` byteString str
   where quitBuilder prefix postfix = foldr mappend mempty
           [ byteString prefix
@@ -59,11 +60,11 @@ authPOP3 :: Socket f Stream TCP
          -> IO (Bool,B.ByteString)
 authPOP3 hSock user pass = do
   sendAllBuilder hSock 1024 (userBuilder "" "\r\n") mempty
-  (state,str1) <- readPOPR hSock mempty
+  (state,_,str1) <- readPOPR hSock mempty
   let b1 = userBuilder ">> " "\n"  `mappend` byteString str1
   if state then do
     sendAllBuilder hSock 1024 (passBuilder "" "\r\n") mempty
-    (is, str2) <- readPOPR hSock mempty
+    (is,_,str2) <- readPOPR hSock mempty
     let b2 = passBuilder ">> " "\n" `mappend` byteString str2
         rt2 = BL.toStrict $ toLazyByteString $ b1 `mappend` b2
     return (is,rt2)
@@ -88,9 +89,9 @@ authPOP3 hSock user pass = do
 statPOP3 :: Socket f Stream TCP -> IO (Int,Int,B.ByteString) 
 statPOP3 hSock = do
   sendAllBuilder hSock 1024 (statBuilder "" "\r\n") mempty
-  (state,str) <- readPOPR hSock mempty
+  (state,rt,str) <- readPOPR hSock mempty
   let b = statBuilder ">> " "\n" `mappend` byteString str
-      (t,s) = if state then getPOPSTAT str else (0,0)
+      (t,s) = if state then getPOPSTAT rt else (0,0)
       rt = BL.toStrict $ toLazyByteString b
   return (t,s,rt)
   where statBuilder prefix postfix = foldr mappend mempty
@@ -104,7 +105,7 @@ statPOP3 hSock = do
 retrPOP3 :: Socket f Stream TCP -> Int -> Int -> IO (B.ByteString)
 retrPOP3 hSock i t  = do
   sendAllBuilder hSock 1024 (retrBuilder "" "\r\n") mempty
-  (state,str1) <- readPOPR hSock mempty
+  (state,_,str1) <- readPOPR hSock mempty
   str2 <- if state then readUntilDotLine hSock mempty
           else return ""
   return $ BL.toStrict $ toLazyByteString $ retrBuilder ">> " "\n"
@@ -131,6 +132,6 @@ connectPOP3auth url user pass = do
 
 
 \begin{code}
-readPOPR :: Socket f Stream TCP -> MessageFlags -> IO (Bool,B.ByteString)
+readPOPR :: Socket f Stream TCP -> MessageFlags -> IO (Bool,B.ByteString,B.ByteString)
 readPOPR hSock msgf = getPOPR <$> readUntilEndLine hSock msgf
 \end{code}

@@ -2,11 +2,7 @@
 
 \begin{code}
 module Network.Netutils.GTK
-       ( module Gdk
-       , module Gtk
-       , module GLib
-       , module Base
-       , initGUI
+       ( initGUI
        ) where
 
 import qualified GI.Gdk as Gdk

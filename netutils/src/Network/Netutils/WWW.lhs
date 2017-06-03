@@ -12,7 +12,7 @@ import qualified GI.Gtk as Gtk
 \begin{code}
 main :: IO ()
 main = do
-  initWWW
+  initGUI
   win <- mkMainWindow
   textview <- mkTextView win
   (header,urlEntry) <- mkHeadBar win

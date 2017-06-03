@@ -3,19 +3,23 @@
 \begin{code}
 module Network.Netutils.FTP.GUI
        ( FTPWindow
-       , initFTP
+       , initGUI
        , mkFTPWindow
        , mkFieldCheckEvent
        , mkButtonsClickedEvent
        , displayAll
-       , initGUI
        ) where
 
 
 import Network.Netutils.FTP.Internal
 import Network.Netutils.Socket
-import Network.Netutils.GTK hiding(init,main)
-import qualified Network.Netutils.GTK as Gtk
+
+import Network.Netutils.GTK
+import qualified GI.Gdk as Gdk
+import GI.Gtk hiding (init,main)
+import qualified GI.Gtk as Gtk
+import qualified GI.GLib as GLib
+import Data.GI.Base
 
 import Control.Concurrent
 import Control.Monad
@@ -125,10 +129,10 @@ mkButtonsClickedEvent v@FTPWindow{..} = do
     user <- encodeUtf8 <$> getText eUser
     pass <- encodeUtf8 <$> getText ePass
     mv <- newEmptyMVar
-    threadsAddIdle PRIORITY_DEFAULT $ do
+    Gdk.threadsAddIdle GLib.PRIORITY_DEFAULT $ do
       connectFTPauth url user pass >>= putMVar mv
       return False
-    threadsAddIdle PRIORITY_DEFAULT $ do
+    Gdk.threadsAddIdle GLib.PRIORITY_DEFAULT $ do
       (hSock,is,str) <- takeMVar mv
       buff <- tvVerbose `get` #buffer
       end  <- textBufferGetEndIter buff ::  IO TextIter
@@ -141,11 +145,11 @@ mkButtonsClickedEvent v@FTPWindow{..} = do
       return False
   on bList #clicked $ void $ do
     mv <- newEmptyMVar
-    threadsAddIdle PRIORITY_DEFAULT $ do
+    Gdk.threadsAddIdle GLib.PRIORITY_DEFAULT $ do
       hSock <- readIORef ftpSocket
       listFTPpasv hSock >>= putMVar mv
       return False
-    threadsAddIdle PRIORITY_DEFAULT $ do
+    Gdk.threadsAddIdle GLib.PRIORITY_DEFAULT $ do
       (str,strd) <- takeMVar mv
       buffV <- tvVerbose `get` #buffer
       end  <- textBufferGetEndIter buffV ::  IO TextIter
@@ -155,11 +159,11 @@ mkButtonsClickedEvent v@FTPWindow{..} = do
       return False
   on bQuit #clicked $ void $ do
     mv <- newEmptyMVar
-    threadsAddIdle PRIORITY_DEFAULT $ do
+    Gdk.threadsAddIdle GLib.PRIORITY_DEFAULT $ do
       hSock <- readIORef ftpSocket
       closeFTP hSock >>= putMVar mv
       return False
-    threadsAddIdle PRIORITY_DEFAULT $ do
+    Gdk.threadsAddIdle GLib.PRIORITY_DEFAULT $ do
       str  <- takeMVar mv
       buff <- tvVerbose `get` #buffer
       end  <- textBufferGetEndIter buff ::  IO TextIter
