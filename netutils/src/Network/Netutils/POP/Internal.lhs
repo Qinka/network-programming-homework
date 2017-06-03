@@ -119,6 +119,18 @@ retrPOP3 hSock i t  = do
 \end{code}
 
 \begin{code}
+connectPOP3auth :: forall f .HasAddressInfo f
+                => B.ByteString
+                -> B.ByteString -> B.ByteString
+                -> IO (Socket f Stream TCP,Bool,B.ByteString)
+connectPOP3auth url user pass = do
+  (hSock,str1) <- connectPOP3 url
+  (is,str2) <- authPOP3 hSock user pass
+  return (hSock,is,str1 `B.append` str2)
+\end{code}
+
+
+\begin{code}
 readPOPR :: Socket f Stream TCP -> MessageFlags -> IO (Bool,B.ByteString)
 readPOPR hSock msgf = getPOPR <$> readUntilEndLine hSock msgf
 \end{code}

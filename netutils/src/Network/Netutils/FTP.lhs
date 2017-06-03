@@ -12,7 +12,7 @@ import Network.Netutils.FTP.GUI
 \begin{code}
 main :: IO ()
 main = do
-  initFTP
+  initGUI
   win <- mkFTPWindow :: IO (FTPWindow Inet)
   mkFieldCheckEvent win
   mkButtonsClickedEvent win
