@@ -110,8 +110,6 @@ mkButtonClickedEvent :: SIPWindow -> IO ()
 mkButtonClickedEvent SIPWindow{..} = void $ on sipButton #clicked $ void $ do
   st <- readIORef sipState
   if st then do
-    buf' <- sipTextView `get` #buffer
-    buf' `set` [#text := ""]
     writeIORef sipState False
     let isEmptyText tv =
           tv `get` #buffer >>= \buf -> T.null <$> buf `get` #text
@@ -119,6 +117,8 @@ mkButtonClickedEvent SIPWindow{..} = void $ on sipButton #clicked $ void $ do
     isBS <- checkFields
     sipButton `set` [#label := "Start Scan", #sensitive := isBS]
     else void $ do
+    buf' <- sipTextView `get` #buffer
+    buf' `set` [#text := ""]
     writeIORef sipState True
     sipButton `set` [#label := "Stop Scan"]
     mv  <- newEmptyMVar
@@ -133,7 +133,7 @@ mkButtonClickedEvent SIPWindow{..} = void $ on sipButton #clicked $ void $ do
               , c <- mkRange (rts !! 2, rts !! 6)
               , d <- mkRange (rts !! 3, rts !! 7)
               ]
-    Gdk.threadsAddIdle GLib.PRIORITY_DEFAULT_IDLE $ do
+    forkIO $ void $ do
       loopScan ips (rts !! 8) mv sipState 0
   where loopScan [] _ _ _ _ = do
           let isEmptyText tv =
@@ -147,7 +147,9 @@ mkButtonClickedEvent SIPWindow{..} = void $ on sipButton #clicked $ void $ do
           ist <- readIORef sig
           if ist then do
             rt <- scanIP to i
-            dis (rt,i)
+            buf <- sipTextView `get` #buffer
+            end <- textBufferGetEndIter buf :: IO TextIter
+            dis (rt,i) buf end 
             loopScan is to mv sig (count `mod` 10 +1)
             else do
             let isEmptyText tv =
@@ -157,11 +159,9 @@ mkButtonClickedEvent SIPWindow{..} = void $ on sipButton #clicked $ void $ do
             sipButton `set` [#label := "Start Scan", #sensitive := isB]
             writeIORef sig True
             return False
-        dis :: (Maybe [Word8],(Word8,Word8,Word8,Word8)) -> IO ()
-        dis (it,ip) = void $ do
+        dis :: (Maybe [Word8],(Word8,Word8,Word8,Word8)) -> TextBuffer -> TextIter -> IO ()
+        dis (it,ip) buf end = void $ do
           let is = it /= Nothing
-          buf <- sipTextView `get` #buffer
-          end <- textBufferGetEndIter buf :: IO TextIter
           #insert buf end (disIP is ip) (-1)
         disIP :: Bool -> (Word8,Word8,Word8,Word8) -> T.Text
         disIP is (a,b,c,d) =

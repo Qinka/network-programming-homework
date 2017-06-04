@@ -11,8 +11,10 @@ import System.Socket                  as Socket
 import System.Socket.Family.Inet      as Socket
 import System.Socket.Family.Inet6     as Socket
 import System.Socket.Protocol.TCP     as Socket
+import System.Socket.Protocol.UDP     as Socket
 import System.Socket.Type.Stream      as Socket
 import System.Socket.Type.Raw         as Socket
+import System.Socket.Type.Datagram    as Socket
 
 import Data.ByteString.Builder
 import qualified Data.ByteString as B
