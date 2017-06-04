@@ -6,14 +6,15 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import System.Environment
 
-import qualified Network.Netutils.FTP    as FTP
-import qualified Network.Netutils.POP    as POP
-import qualified Network.Netutils.ScanIP as SIP
-import qualified Network.Netutils.WWW    as WWW
+import qualified Network.Netutils.FTP      as FTP
+import qualified Network.Netutils.POP      as POP
+import qualified Network.Netutils.ScanIP   as SIP
+import qualified Network.Netutils.ScanPort as SPT
+import qualified Network.Netutils.WWW      as WWW
 
 main :: IO ()
 main = do
-  let is = [ www, ftp, pop, scanip ]
+  let is = [ www, ftp, pop, scanip, scanport ]
   mkMain is  
 \end{code}
 
@@ -39,7 +40,11 @@ scanip = Item { itemMainMethod = SIP.main
               , itemName       = "netutils-scanip"
               , itemInfo       = "Scan the ip"
               }
-                
+scanport :: Item
+scanport = Item { itemMainMethod = SPT.main
+                , itemName       = "netutils-scanport"
+                , itemInfo       = "Scan the port"
+                }
 \end{code}
 
 

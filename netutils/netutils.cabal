@@ -24,6 +24,8 @@ library
                        Network.Netutils.ScanIP.GUI
                        Network.Netutils.ScanIP
                        Network.Netutils.ScanPort.Internal
+                       Network.Netutils.ScanPort.GUI
+                       Network.Netutils.ScanPort
                        Network.Netutils.Parsers
                        Network.Netutils.POP.Internal
                        Network.Netutils.POP.GUI
