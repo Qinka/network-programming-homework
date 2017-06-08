@@ -23,6 +23,9 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Builder as Builder
 \end{code}
 
+
+So in the to-do list, the one high above of the list is about connecting with server.
+The url will be parsed, can get the real ip and port of the server.
 \begin{code}
 connectFTP :: forall f.HasAddressInfo f
            => B.ByteString
@@ -40,7 +43,8 @@ connectFTP ftpUrl = do
       (_,_,rt) <- readFTPR hSock mempty
       return (hSock,rt)
 \end{code}
-
+Another item on the list with high priority is close the connection.
+For many kinds of the reason, the connection need to be closed.
 \begin{code}
 closeFTP :: Socket f Stream TCP -> IO B.ByteString
 closeFTP hSock = do
@@ -53,7 +57,7 @@ closeFTP hSock = do
           , byteString postfix
           ]
 \end{code}
-
+The method to sign in.
 \begin{code}
 authFTP :: Socket f Stream TCP
         -> B.ByteString -> B.ByteString
@@ -91,7 +95,7 @@ authFTP hSock user pass = do
           , byteString postfix
           ]          
 \end{code}
-
+The method to start passive mode.
 \begin{code}
 pasvFTP :: HasAddressInfo f => Socket f Stream TCP -> IO (Maybe (Socket f Stream TCP),B.ByteString)
 pasvFTP hSock = do
@@ -117,8 +121,7 @@ pasvFTP hSock = do
           , byteString postfix
           ]
 \end{code}
-
-
+The method to receive datas in passive mode.
 \begin{code}
 listFTP :: Socket f Stream TCP -> Socket f Stream TCP -> IO (B.ByteString,B.ByteString)
 listFTP hSock pSock = do
@@ -156,7 +159,7 @@ listFTP hSock pSock = do
           , byteString postfix
           ]
 \end{code}
-
+The method to process the FTP's response.
 \begin{code}
 readFTPR :: Socket f Stream TCP -> MessageFlags -> IO (Int,B.ByteString,B.ByteString)
 readFTPR hSock msgf = fixM (readUntilEndLine hSock msgf) mempty mempty >>=
@@ -168,7 +171,7 @@ readFTPR hSock msgf = fixM (readUntilEndLine hSock msgf) mempty mempty >>=
             (Just id,info) -> return (id,infoB `mappend` byteString info, allB `mappend` byteString str)
             (Nothing,info) -> fixM mf ( infoB `mappend` byteString info) (allB `mappend` byteString str)
 \end{code}
-
+The method encapsulated with connecting and signning in.
 \begin{code}
 connectFTPauth :: forall f.HasAddressInfo f
                    => B.ByteString
@@ -179,7 +182,7 @@ connectFTPauth url user pass = do
   (is,str2) <- authFTP hSock user pass
   return (hSock,is,str1 `B.append` str2)
 \end{code}
-
+The method encapsulated with list command and passive mode.
 \begin{code}
 listFTPpasv :: HasAddressInfo f => Socket f Stream TCP -> IO (B.ByteString,B.ByteString)
 listFTPpasv hSock = do

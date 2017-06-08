@@ -18,6 +18,9 @@ cabal.sandbox.config
 .stack-work/
 cabal.project.local
 
+auto
+.DS_Store
+
 *~
 \#*
 .\#*

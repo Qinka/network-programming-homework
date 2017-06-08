@@ -1,3 +1,7 @@
+
+\subsection{GUI}
+\label{sec:scanip:gui}
+
 \begin{code}
 module Network.Netutils.ScanIP.GUI
        ( SIPWindow
@@ -32,6 +36,9 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 \end{code}
 
+Firstly, a ADT for window is needed, where holds two windows, one for panel, and one for output(result),
+a button to start or to stop the scanning, a serial entries about the ip address, a text view in the window to display the result,
+and others widgets.
 \begin{code}
 data SIPWindow = SIPWindow
                  { sipWindows :: (Window,Window) -- panel, data
@@ -41,7 +48,7 @@ data SIPWindow = SIPWindow
                  , sipState :: IORef Bool
                  }
 \end{code}
-
+The method for windows' constructor.
 \begin{code}
 mkSIPWindow :: IO SIPWindow
 mkSIPWindow = do
@@ -93,7 +100,7 @@ mkSIPWindow = do
                      , sipState    = ct
                      }
 \end{code}
-
+The method add the handler when some fields changed.
 \begin{code}
 mkFieldCheckEvent :: SIPWindow -> IO ()
 mkFieldCheckEvent SIPWindow{..} = void $ do
@@ -104,7 +111,7 @@ mkFieldCheckEvent SIPWindow{..} = void $ do
         sipButton `set` [#sensitive := not (or rts)]
   mapM_ (\e -> on e #activate checkFields) sipEntries
 \end{code}
-
+The method add the handler when some buttons clicked.
 \begin{code}
 mkButtonClickedEvent :: SIPWindow -> IO ()
 mkButtonClickedEvent SIPWindow{..} = void $ on sipButton #clicked $ void $ do
@@ -178,7 +185,7 @@ mkButtonClickedEvent SIPWindow{..} = void $ on sipButton #clicked $ void $ do
               b = min b' 254
           in [a .. b]
 \end{code}
-
+The method to display all the widgets and windows.
 \begin{code}
 displayAll :: SIPWindow -> IO ()
 displayAll SIPWindow{..} = do

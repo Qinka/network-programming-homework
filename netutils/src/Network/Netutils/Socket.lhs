@@ -1,3 +1,9 @@
+
+\subsection{Socket}
+\label{sec:oc:socket}
+
+
+
 \begin{code}
 module Network.Netutils.Socket
        ( module Socket
@@ -21,6 +27,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
 \end{code}
 
+In this section, codes is about the socket, and receive the datas via socket.
 
 \begin{code}
 readUntilDotLine :: Socket f Stream p -> MessageFlags -> IO B.ByteString

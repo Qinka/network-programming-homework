@@ -1,4 +1,6 @@
 
+\subsection{Scan Port (Internal)}
+\label{sec:scanport:internal}
 
 \begin{code}
 module Network.Netutils.ScanPort.Internal
@@ -24,6 +26,8 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Builder as Builder
 \end{code}
 
+To scan the TCP port, we need try to connect with the remote host's port. If the connection can be established,
+that means the TCP port is opened. If we get a exception, that means TCP port is closed.
 \begin{code}
 scanPortTCP :: (HasAddressInfo f,Show (SocketAddress f)) => Int -> SocketAddress f -> IO (Bool,Socket f Stream TCP)
 scanPortTCP to addr = do
@@ -36,7 +40,9 @@ scanPortTCP to addr = do
     _ -> (False,sock)
 \end{code}
 
-
+To scan the UPD port, we need try to send a UDP package the port. If we receive a ICMP package, which is about the remote can not be reached,
+that means the port is closed.
+If we receive nothing or just something, that means the port is opened.
 \begin{code}
 scanPortUDP :: (HasAddressInfo f,Show (SocketAddress f)) => Int -> SocketAddress f -> IO (Bool,Socket f Datagram UDP)
 scanPortUDP to addr = do
@@ -53,7 +59,7 @@ scanPortUDP to addr = do
           timeout to (receive sock 1 mempty)
           close sock
 \end{code}
-
+The method the get the address of the remote.
 \begin{code}
 mkInetAddr :: (Word8,Word8,Word8,Word8) -> Word16 -> SocketAddress Inet
 mkInetAddr ip port = SocketAddressInet (inetAddressFromTuple ip) (fromIntegral port)

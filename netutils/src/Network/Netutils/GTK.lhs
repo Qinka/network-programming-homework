@@ -1,4 +1,8 @@
 
+\subsection{{GTK+}}
+\label{sec:oc:gtk}
+
+
 
 \begin{code}
 module Network.Netutils.GTK
@@ -11,6 +15,8 @@ import qualified GI.GLib as GLib
 import qualified Data.GI.Base as Base
 import System.Mem(performGC)
 \end{code}
+
+This section is about the initial method of the GTK re-encapsulated.
 
 \begin{code}
 initGUI :: IO ()

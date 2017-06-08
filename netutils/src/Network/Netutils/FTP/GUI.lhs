@@ -1,4 +1,6 @@
 
+\subsection{FTP GUI}
+\label{sec:ftp:gui}
 
 \begin{code}
 module Network.Netutils.FTP.GUI
@@ -32,6 +34,11 @@ import qualified Data.Text       as T
 import qualified Data.ByteString as B
 \end{code}
 
+After the codes about the communicating with server done, the next item on the to-do list
+is GUI.
+
+The ADT of the window of FTP is defined at the following codes, where the necessary items stored.
+There are three windows, two text views, three buttons, three entries, and a socket with \lstinline|IORef|.
 \begin{code}
 data FTPWindow f = FTPWindow
                    { ftpWindows :: (Window,Window,Window) -- panel, verbose, data
@@ -42,8 +49,10 @@ data FTPWindow f = FTPWindow
                    }
 \end{code}
 
-
-
+The first thing to do is create the windows, and the widgets.
+The widgets will be divided into three parts: panel, where hold the settings, verbose, where display the
+details of the communication, and data, where display the datas translated from the server.
+In the verbose and data window, there is a scroll widget to hold the text view where display texts.
 \begin{code}
 mkFTPWindow :: Family f => IO (FTPWindow f)
 mkFTPWindow = do
@@ -93,7 +102,7 @@ mkFTPWindow = do
                      }
 \end{code}
 
-
+The method to add the check event, which is about checking whether the fields is empty.
 \begin{code}
 mkFieldCheckEvent :: FTPWindow f -> IO ()
 mkFieldCheckEvent v@FTPWindow{..} = do
@@ -114,7 +123,7 @@ mkFieldCheckEvent v@FTPWindow{..} = do
   on ePass #activate checkFields
   return ()
 \end{code}
-
+The method to add the event to button.
 \begin{code}
 mkButtonsClickedEvent :: HasAddressInfo f => FTPWindow f -> IO ()
 mkButtonsClickedEvent v@FTPWindow{..} = do
@@ -180,8 +189,7 @@ mkButtonsClickedEvent v@FTPWindow{..} = do
       return False
   return ()
 \end{code}
-
-  
+THe method to display all the things.
 \begin{code}
 displayAll :: FTPWindow f -> IO ()
 displayAll FTPWindow{..} = do

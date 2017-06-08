@@ -12,7 +12,6 @@ module Network.Netutils.WWW.GUI
        , guiStartX
        ) where
 
-
 import Network.Netutils.WWW.HTTP
 
 import Network.Netutils.GTK
@@ -54,6 +53,9 @@ updateHTTPItem urlEntry textview = void $ do
           return False
 \end{code}
 
+After the we can send the HTTP request, there is a GUI interface needed.
+
+The window. 
 \begin{code}
 mkMainWindow :: IO Window
 mkMainWindow = do
@@ -64,7 +66,7 @@ mkMainWindow = do
   on win #destroy mainQuit
   return win
 \end{code}
-
+The head bar of the GUI.
 \begin{code}
 mkHeadBar :: Window -> IO (HeaderBar,Entry)
 mkHeadBar win = do
@@ -78,7 +80,7 @@ mkHeadBar win = do
   #setTitlebar win $ Just header
   return (header,urlEntry)
 \end{code}
-
+The text view.
 \begin{code}
 mkTextView :: Window -> IO (TextView)
 mkTextView win = do
@@ -90,7 +92,7 @@ mkTextView win = do
   #add win sw
   return textView
 \end{code}
-
+The start method.
 \begin{code}
 guiStartX :: Window -> IO ()
 guiStartX win = do

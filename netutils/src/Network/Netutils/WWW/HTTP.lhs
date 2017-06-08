@@ -25,8 +25,14 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Builder as Builder
 \end{code}
 
+The way to send the HTTP's GET request is by using TCP socket.
+There are four step to send a GET request.
 
-The method to connect the web site.
+The first step is connect the TCP with the HTTP server.
+To connect it, we need to information: ip and port.
+After the url given, the parser can get the hostname, protocol, and the port of the url.
+Then by searching the name server, the real ip and the port can be found.
+Finally, the connection can be establish.
 \begin{code}
 connectHTTP :: forall f.HasAddressInfo f
             => B.ByteString
@@ -45,7 +51,8 @@ connectHTTP httpUrl = do
       return (hSock,urlHostName,urlPath)
 \end{code}
 
-The method work with the socket.
+And to make sure the socket connection can be closed, there is a method \lstinline|withHTTP| defined.
+Such a method will take in another method close the socket after that method finished, and return the result.
 \begin{code}
 withHTTP :: HasAddressInfo f
          => B.ByteString
@@ -58,7 +65,8 @@ withHTTP httpUrl func = do
   return texts
 \end{code}
 
-
+When sending the request, the first step of all is sending the "GET" header of the request.
+In this ``line'', there are informations about type of the request, version of the HTTP, and request path.
 \begin{code}
 rqHTTPSendVersion :: Family f => Socket f Stream TCP -> B.ByteString -> IO B.ByteString
 rqHTTPSendVersion hSock path = do
@@ -72,6 +80,8 @@ rqHTTPSendVersion hSock path = do
           ]                       
 \end{code}
 
+The other information followed the first line is about the headers of the HTTP.
+One of the header is the host's hostname.
 \begin{code}
 rqHTTPSendHostName :: Family f => Socket f Stream TCP -> B.ByteString -> IO B.ByteString
 rqHTTPSendHostName hSock hostname = do
@@ -83,7 +93,7 @@ rqHTTPSendHostName hSock hostname = do
           , byteString hostname
           ]
 \end{code}
-
+One of the header is the MIME type of what you want.
 \begin{code}
 rqHTTPSendAccept :: Family f => Socket f Stream TCP -> IO B.ByteString
 rqHTTPSendAccept hSock = do
@@ -94,7 +104,7 @@ rqHTTPSendAccept hSock = do
           , byteString "Accept:text:/html"
           ]
 \end{code}
-
+One of the header is about the users' agent.
 \begin{code}
 rqHTTPSendUserAgent :: Family f => Socket f Stream TCP -> B.ByteString -> IO B.ByteString
 rqHTTPSendUserAgent hSock ua = do
@@ -106,8 +116,7 @@ rqHTTPSendUserAgent hSock ua = do
           , byteString ua
           ]
 \end{code}
-
-
+After sending all the headers needed, an empty line, which means the end of the request, is needed to be sended.
 \begin{code}
 rqHTTPSendEnd :: Family f => Socket f Stream TCP -> IO B.ByteString
 rqHTTPSendEnd hSock = do
@@ -115,7 +124,8 @@ rqHTTPSendEnd hSock = do
   return $ BL.toStrict $ toLazyByteString $ msgBuilder ">> " "\n"
   where msgBuilder prefix postfix = byteString prefix `mappend` byteString postfix
 \end{code}
-
+The final one high of the to-do list is the receive the response from the service.
+All we need to do, firstly, is receive the response's headers, and when received an empty line, that means all headers we had received. Then the size of the body can be found. Finally, the body of the request will be received.
 \begin{code}
 rqHTTPReceive :: Family f => Socket f Stream TCP -> IO B.ByteString
 rqHTTPReceive hSock = do
@@ -125,7 +135,7 @@ rqHTTPReceive hSock = do
   return $ hHead `B.append` hBody
 \end{code}
 
-
+Then encapsulate methods into one.
 \begin{code}
 doHTTPv4 :: B.ByteString -> IO B.ByteString
 doHTTPv4 url = withHTTP url worker

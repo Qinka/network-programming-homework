@@ -1,4 +1,3 @@
-
 \subsection{POP Internal Communication}
 \label{sec:pop:internal}
 
@@ -23,6 +22,8 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Builder as Builder
 \end{code}
 
+So it's going to be an old saying that connect before you do whatever you want to.
+The method is about connecting with the server.
 \begin{code}
 connectPOP3 :: forall f.HasAddressInfo f
             => B.ByteString
@@ -40,12 +41,13 @@ connectPOP3 popUrl = do
       (_,_,str) <- readPOPR hSock mempty
       return (hSock,str)
 \end{code}
-
+The method to quit connection, and close the socket.
 \begin{code}
 quitPOP3 :: Socket f Stream TCP -> IO (B.ByteString)
 quitPOP3 hSock = do
   sendAllBuilder hSock 1024 (quitBuilder "" "\r\n") mempty
   (_,_,str) <- readPOPR hSock mempty
+  close hSock
   return $ BL.toStrict $ toLazyByteString $ quitBuilder ">> " "\n" `mappend` byteString str
   where quitBuilder prefix postfix = foldr mappend mempty
           [ byteString prefix
@@ -53,7 +55,7 @@ quitPOP3 hSock = do
           , byteString postfix
           ]
 \end{code}
-
+The method to sign into the POP server.
 \begin{code}
 authPOP3 :: Socket f Stream TCP
          -> B.ByteString -> B.ByteString
@@ -84,7 +86,7 @@ authPOP3 hSock user pass = do
           , byteString postfix
           ]
 \end{code}
-
+The method to get the status of the mail box.
 \begin{code}
 statPOP3 :: Socket f Stream TCP -> IO (Int,Int,B.ByteString) 
 statPOP3 hSock = do
@@ -100,7 +102,7 @@ statPOP3 hSock = do
           , byteString postfix
           ]
 \end{code}
-
+The method to receive the returned mail.
 \begin{code}
 retrPOP3 :: Socket f Stream TCP -> Int -> Int -> IO (B.ByteString)
 retrPOP3 hSock i t  = do
@@ -118,7 +120,7 @@ retrPOP3 hSock i t  = do
           , byteString postfix
           ]
 \end{code}
-
+The encapsulated method to sign in when connecting to the server.
 \begin{code}
 connectPOP3auth :: forall f .HasAddressInfo f
                 => B.ByteString
@@ -130,7 +132,8 @@ connectPOP3auth url user pass = do
   return (hSock,is,str1 `B.append` str2)
 \end{code}
 
-
+The encapsulated method to receive and parse the response from the  server.
+And that will divide the state code and the message.
 \begin{code}
 readPOPR :: Socket f Stream TCP -> MessageFlags -> IO (Bool,B.ByteString,B.ByteString)
 readPOPR hSock msgf = getPOPR <$> readUntilEndLine hSock msgf

@@ -1,4 +1,8 @@
 
+\subsection{GUI}
+\label{sec:scanport:gui}
+
+
 \begin{code}
 module Network.Netutils.ScanPort.GUI
        ( SPTWindow
@@ -33,6 +37,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 \end{code}
 
+So an ADT of the windows is needed, where holds the widgets, windows, and the variables.
 \begin{code}
 data SPTWindow = SPTWindow { sptWindows :: (Window,Window,Window) -- panel, tcp, udp
                            , sptViews :: (TextView,TextView) -- tcp,udp
@@ -41,7 +46,7 @@ data SPTWindow = SPTWindow { sptWindows :: (Window,Window,Window) -- panel, tcp,
                            , sptState :: (IORef Bool,IORef Bool)
                            }
 \end{code}
-
+The method of the windows' constructor.
 \begin{code}
 mkSPTWindow :: IO SPTWindow
 mkSPTWindow = do
@@ -93,7 +98,7 @@ mkSPTWindow = do
                      , sptState   = (tcpS,udpS)
                      }
 \end{code}
-
+The method to add the handler of event when the text in some fields changed.
 \begin{code}
 mkFieldCheckEvent :: SPTWindow -> IO ()
 mkFieldCheckEvent SPTWindow{..} = void $ do
@@ -105,7 +110,7 @@ mkFieldCheckEvent SPTWindow{..} = void $ do
         snd sptButtons `set` [#sensitive := rts]
   mapM_ (\e -> on e #activate checkFields) sptEntries
 \end{code}
-
+The method to add the handler of event when some buttons clicked.
 \begin{code}
 mkButtonsClickedEvent :: SPTWindow -> IO ()
 mkButtonsClickedEvent SPTWindow{..} = void $ do
@@ -180,7 +185,7 @@ mkButtonsClickedEvent SPTWindow{..} = void $ do
           in [a .. b]
 \end{code}
 
-              
+The method to display all the widget and windows.              
 \begin{code}
 displayAll :: SPTWindow -> IO ()
 displayAll SPTWindow{..} = do

@@ -1,5 +1,6 @@
 
-\section{URL Parser}
+\subsection{Parsers}
+\label{sec:oc:parsers}
 
 \begin{code}
 module Network.Netutils.Parsers
@@ -23,6 +24,7 @@ import Text.Parsec
 import Text.Parsec.Char
 \end{code}
 
+In this section, the codes are about the parsers, which are used to parisng the responses or text.
 
 \begin{code}
 data URL a = URL { urlProtocal :: !a

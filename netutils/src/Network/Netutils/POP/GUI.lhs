@@ -1,4 +1,6 @@
 
+\subsection{GUI of POP3}
+\label{sec:pop:gui}
 \begin{code}
 module Network.Netutils.POP.GUI
        ( POPWindow
@@ -31,6 +33,10 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 \end{code}
 
+First of all, the ADT of the window are defined with the following codes.
+In this data type, it holds the two windows, one for panel and one for verbose,
+a text view to display the details of the communication, a socket for connection,
+and others widgets or variables which will bu used.
 \begin{code}
 data POPWindow f = POPWindow
                    { popWindows :: (Window,Window) -- panel, verbose
@@ -42,6 +48,7 @@ data POPWindow f = POPWindow
                    }                   
 \end{code}
 
+Next one is the method of the windows' constructor.
 \begin{code}
 mkPOPWindow :: Family f => IO (POPWindow f)
 mkPOPWindow = do
@@ -91,7 +98,7 @@ mkPOPWindow = do
                      , popTotal   = tot
                      }
 \end{code}
-
+The method to add the checking event to entries.
 \begin{code}
 mkFieldCheckEvent :: POPWindow f -> IO ()
 mkFieldCheckEvent v@POPWindow{..} = void $ do
@@ -117,7 +124,7 @@ mkFieldCheckEvent v@POPWindow{..} = void $ do
     let iT = total <= 0
     bRetr `set` [#sensitive := not ( iT || iM)]
 \end{code}
-
+The method to add the clicked event handler of the button.
 \begin{code}
 mkButtonsClickedEvent :: HasAddressInfo f => POPWindow f -> IO ()
 mkButtonsClickedEvent v@POPWindow{..} = void $ do
@@ -195,7 +202,7 @@ mkButtonsClickedEvent v@POPWindow{..} = void $ do
       bConn `set` [#sensitive := not (or [iI,iU,iP])]
       return False      
 \end{code}
-
+Finaly, the method to display all the widgets and windows.
 \begin{code}
 displayAll :: POPWindow f -> IO ()
 displayAll POPWindow{..} = do
