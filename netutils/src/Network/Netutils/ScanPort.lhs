@@ -26,7 +26,7 @@ main = do
 \end{code}
 
 \inputHaskell{src/Network/Netutils/ScanPort/Internal.lhs}
-\inputHaskell{src/Network/Metutils/ScanPort/GUI.lhs}
+\inputHaskell{src/Network/Netutils/ScanPort/GUI.lhs}
 
 \subsection{Application}
 \label{sec:scanport:app}

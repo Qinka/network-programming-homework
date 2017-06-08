@@ -27,7 +27,7 @@ main = do
 \end{code}
 
 \inputHaskell{src/Network/Netutils/POP/Internal.lhs}
-\inputHaskell{sec/Network/Netutils/POP/GUI.lhs}
+\inputHaskell{src/Network/Netutils/POP/GUI.lhs}
 
 \subsection{Application}
 \label{sec:pop:app}

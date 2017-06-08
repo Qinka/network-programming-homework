@@ -2,7 +2,7 @@
 
 %% xeCJK
 \usepackage{xeCJK}
-\setmainCJKfont{SimSun}
+\setCJKmainfont{SimSun}
 
 % packages
 \usepackage{listings}
@@ -109,7 +109,9 @@
     The codes include parsing, socket, receiving datas.
     
     \inputHaskell{app/Main.lhs}
-    \inputHaskell{src/Network/Netutils/}
+    \inputHaskell{src/Network/Netutils/Parsers.lhs}
+    \inputHaskell{src/Network/Netutils/GTK.lhs}
+    \inputHaskell{src/Network/Netutils/Socket.lhs}
 
 
 \end{document}
